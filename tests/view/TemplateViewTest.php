@@ -30,6 +30,19 @@ class TemplateViewTest extends \PHPUnit_Framework_TestCase
         
         $this->assertEquals('test', $result);
     }
+    
+    public function testLoadNonExistingTpl()
+    {
+        $file = __DIR__ . '/tpl/pathtononexistingtemplate.txt';
+    
+        $tpl = new TemplateView($file);
+        try{
+            $tpl->render(); // should throw an exception
+            $this->fail('Expected an exception');
+        } catch(\view\ViewException $ex){
+            //
+        }
+    }
 
     public function testTplWithVar()
     {
