@@ -83,12 +83,14 @@ class TemplateView implements IView
     /**
      * (non-PHPdoc)
      *
-     * @see compact\mvc\IView::render()
+     * @see \view\IView::render()
+     * 
+     * @throws \view\ViewException when the template could not be found
      */
     public function render()
     {
          if (! is_file($this->template)) {
-            throw new \Exception("Template " . $this->template . " does not exist.");
+            throw new ViewException("Template " . $this->template . " does not exist.");
         }
         
         ob_start('mb_output_handler');
