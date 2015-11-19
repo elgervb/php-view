@@ -89,7 +89,7 @@ class TemplateView implements IView
      */
     public function render()
     {
-         if (! is_file($this->template)) {
+        if (! is_file($this->template)) {
             throw new ViewException("Template " . $this->template . " does not exist.");
         }
         
