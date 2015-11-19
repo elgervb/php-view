@@ -1,5 +1,5 @@
 <?php
-namespace ns;
+namespace view;
 
 use view\TemplateView;
 
