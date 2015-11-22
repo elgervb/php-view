@@ -65,8 +65,6 @@ class TemplateView implements IView
         if (isset($this->vars[$aKey])) {
             return $this->vars[$aKey];
         }
-        
-        return $this;
     }
 
     /**
