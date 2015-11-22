@@ -1,1 +1,1 @@
-<?= $this->test('test1', 'test2') ?>
+<?php echo $this->test('test1', 'test2') ?>
