@@ -1,14 +1,14 @@
 <?php
 namespace view;
 
-use view\TemplateView;
+use view\SimpleTemplateView;
 
 /**
  *
  * @author eaboxt
  *        
  */
-class TemplateViewTest extends \PHPUnit_Framework_TestCase
+class SimpleTemplateViewTest extends \PHPUnit_Framework_TestCase
 {
 
     protected function setUp()
@@ -23,9 +23,9 @@ class TemplateViewTest extends \PHPUnit_Framework_TestCase
 
     public function testLoadTpl()
     {
-        $file = __DIR__ . '/tpl/simple.txt';
+        $file = __DIR__ . '/tpl/simple/simple.txt';
         
-        $tpl = new TemplateView($file);
+        $tpl = new SimpleTemplateView($file);
         $result = $tpl->render();
         
         $this->assertEquals('test', $result);
@@ -33,9 +33,9 @@ class TemplateViewTest extends \PHPUnit_Framework_TestCase
     
     public function testLoadNonExistingTpl()
     {
-        $file = __DIR__ . '/tpl/pathtononexistingtemplate.txt';
+        $file = __DIR__ . '/tpl/simple/pathtononexistingtemplate.txt';
     
-        $tpl = new TemplateView($file);
+        $tpl = new SimpleTemplateView($file);
         try{
             $tpl->render(); // should throw an exception
             $this->fail('Expected an exception');
@@ -46,9 +46,9 @@ class TemplateViewTest extends \PHPUnit_Framework_TestCase
 
     public function testTplWithVar()
     {
-        $file = __DIR__ . '/tpl/var.txt';
+        $file = __DIR__ . '/tpl/simple/var.txt';
         
-        $tpl = new TemplateView($file);
+        $tpl = new SimpleTemplateView($file);
         $tpl->{'test'} = 'test';
         $result = $tpl->render();
         
@@ -57,9 +57,9 @@ class TemplateViewTest extends \PHPUnit_Framework_TestCase
 
     public function testTplWithFunction()
     {
-        $file = __DIR__ . '/tpl/function.txt';
+        $file = __DIR__ . '/tpl/simple/function.txt';
         
-        $tpl = new TemplateView($file);
+        $tpl = new SimpleTemplateView($file);
         $tpl->{'test'} = function ()
         {
             return 'test';
@@ -71,9 +71,9 @@ class TemplateViewTest extends \PHPUnit_Framework_TestCase
 
     public function testTplWithFunctionArgs()
     {
-        $file = __DIR__ . '/tpl/function-args.txt';
+        $file = __DIR__ . '/tpl/simple/function-args.txt';
         
-        $tpl = new TemplateView($file);
+        $tpl = new SimpleTemplateView($file);
         $tpl->{'test'} = function ($arg1, $arg2)
         {
             return $arg1 . ' ' . $arg2;
