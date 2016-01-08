@@ -3,106 +3,136 @@ namespace view;
 
 /**
  * View with a template
+ * 
+ * {test}   => will parse $this->test
+ * {test()} => will parse $this->test();
+ * {test('asfd','zxv')} => will parse $this->test('asfd','zxv');
  *
  * @author Elger van Boxtel
  */
-class TemplateView implements IView
+class TemplateView extends SimpleTemplateView
 {
-
-    private $vars = array();
-
-    /**
-     *
-     * @var string The full path to a template file
-     */
-    private $template;
-
-    /**
-     * Constructor
-     *
-     * @param string $aTemplate
-     *            The file path to the template
-     * @param array $aVars
-     *            = null Initial variables
-     *            
-     * @throws \view\ViewException when the template path does not exist
-     */
-    public function __construct($aTemplate, array $aVars = null)
-    {
-        $this->template = $aTemplate;
-        
-        if ($aVars != null) {
-            foreach ($aVars as $key => $value) {
-                $this->vars[$key] = $value;
-            }
-        }
-    }
-
-    /**
-     * Overridden magic method __call, do nothing when calling a non-existing method
-     *
-     * @param
-     *            string aMethodName The method name
-     * @param $aArguments array            
-     */
-    public function __call($aMethodName, array $aArguments)
-    {
-        if ($this->{$aMethodName} instanceof \Closure) {
-            return call_user_func_array($this->{$aMethodName}, $aArguments);
-        }
-        return null;
-    }
-
-    /**
-     * Magic method to get a variable from a view
-     *
-     * @param $aKey string            
-     *
-     * @return mixed the value, or itself when not set
-     */
-    public function __get($aKey)
-    {
-        if (isset($this->vars[$aKey])) {
-            return $this->vars[$aKey];
-        }
-    }
-
-    /**
-     * Magic method to set a variable to a view
-     *
-     * @param $aKey string            
-     * @param $aValue mixed            
-     */
-    public function __set($aKey, $aValue)
-    {
-        $this->vars[$aKey] = $aValue;
-    }
 
     /**
      * (non-PHPdoc)
      *
      * @see \view\IView::render()
-     * 
-     * @throws \view\ViewException when the template could not be found
      */
-    public function render()
+    protected function getTemplate()
     {
-        if (! is_file($this->template)) {
-            throw new ViewException("Template " . $this->template . " does not exist.");
-        }
+        $contents = parent::getTemplate();
+        $contents = $this->checkExpressions($contents);
+        $contents = $this->checkBlocks($contents);
+        $contents = $this->replaceVars($contents);
         
-        ob_start('mb_output_handler');
-        include $this->template;
-        return ob_get_clean();
+        return $contents;
+    }
+
+	/** 
+	 * 
+	 */
+    private function checkExpressions($aContent)
+    {
+        $viewmodel = $this;
+        
+        // if blocks
+        $content = preg_replace_callback("/{#(.*)( ?== ?)(.*)}(.*){\/(.*)}/Usi", function ($match) use($viewmodel)
+        {
+            $left = preg_match("/[\'\"]/", $match[1]) ? substr($match[1], 1, $match[1] - 1) : $viewmodel->{$match[1]};
+            $operator = $match[2];
+            $right = preg_match("/[\'\"]/", $match[3]) ? substr($match[3], 1, $match[3] - 1) : $viewmodel->{$match[3]};
+            
+            switch (trim($operator)) {
+                case '==':
+                    if (trim($left) == trim($right)) {
+                        return trim($match[4]);
+                    }
+                    break;
+                default:
+                    throw new \Exception("Operator " + $operator + " in expression not supported");
+            }
+            return "";
+        }, $aContent);
+        
+        return $content;
+    }
+
+	/**
+	 *
+	 */
+    private function checkBlocks($aContent)
+    {
+        $viewmodel = $this;
+        
+        // if blocks
+        $content = preg_replace_callback("/{#(.*)}(.*){\/(.*)}/Usi", function ($match) use($viewmodel)
+        {
+            
+            if ($viewmodel->{$match[1]} != "") {
+                return trim($match[2]);
+            }
+            return "";
+        }, $aContent);
+        
+        // NOT blocks
+        $content = preg_replace_callback("/{!(.*)}(.*){\/(.*)}/Usi", function ($match) use($viewmodel)
+        {
+            
+            if ($viewmodel->{$match[1]} == "") {
+                return trim($match[2]);
+            }
+            return "";
+        }, $content);
+        
+        return $content;
     }
 
     /**
-     * Renders the template
+     * Replace all variables
      *
-     * @return string the rendered output
+     * @param string $aContent            
+     *
+     * @return string the new content
      */
-    public function __toString()
+    private function replaceVars($aContent)
     {
-        return $this->render();
+        $viewmodel = $this;
+        return preg_replace_callback("/{(.*)}/Ui", function ($match) use($viewmodel)
+        {
+            $var = $match[1];
+            if (strstr($var, ".")) { // Object?
+                $parts = explode(".", $var);
+                $obj = $viewmodel->{$parts[0]};
+                if (! is_object($obj)) {
+                    return "";
+                } else 
+                    if (preg_match("/.*\(\)/i", $var)) { // method call
+                        $method = preg_replace("/\(\)/", "", $parts[1]);
+                        $result = $obj->{$method}();
+                    } else {
+                        $result = $viewmodel->{$parts[count($parts) - 1]};
+                    }
+                
+                return $result;
+            } else if(strstr($var, '(') && strstr($var, ')')) { // Closure
+                if (preg_match("/(.*)\((.*)\)/i", $var, $matches)) { 
+                    $func = $matches[1];
+                    if ($matches[2]) { // with arguments
+                        $args = explode(',', $matches[2]);
+                        for ($i =0; $i < count($args); $i++) {
+                            $args[$i] = trim($args[$i]); // strip whitespace
+                            $args[$i] = trim($args[$i], "'\""); // strip quotes
+                        }
+                        return call_user_func_array($viewmodel->{$func}, $args);
+                    }
+                    return  $viewmodel->$func();
+                }
+            } else {
+                // just a normal variable
+                return $viewmodel->{$var};
+            }
+            
+            return ''; // nothing to do
+        }, $aContent);
     }
 }
