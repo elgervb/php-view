@@ -82,4 +82,119 @@ class TemplateViewTest extends \PHPUnit_Framework_TestCase
         
         $this->assertEquals('test1 test2', $result);
     }
+    
+    public function testTplWithIfTrue()
+    {
+        $file = __DIR__ . '/tpl/parsed/if.txt';
+    
+        $tpl = new TemplateView($file);
+        $tpl->{'test'} = true;
+        $result = $tpl->render();
+    
+        $this->assertEquals('1 test 2', $result);
+    }
+    
+    public function testTplWithIfFalse()
+    {
+        $file = __DIR__ . '/tpl/parsed/if.txt';
+    
+        $tpl = new TemplateView($file);
+        $tpl->{'test'} = false;
+        $result = $tpl->render();
+    
+        $this->assertEquals('1  2', $result);
+    }
+    
+    public function testTplWithNotIfTrue()
+    {
+        $file = __DIR__ . '/tpl/parsed/not-if.txt';
+    
+        $tpl = new TemplateView($file);
+        $tpl->{'test'} = true;
+        $result = $tpl->render();
+    
+        $this->assertEquals('1  2', $result);
+    }
+    
+    public function testTplWithNotIfFalse()
+    {
+        $file = __DIR__ . '/tpl/parsed/not-if.txt';
+    
+        $tpl = new TemplateView($file);
+        $tpl->{'test'} = false;
+        $result = $tpl->render();
+    
+        $this->assertEquals('1 test 2', $result);
+    }
+    
+    public function testTplWithExpressionEq()
+    {
+        $file = __DIR__ . '/tpl/parsed/expression-eq-string.txt';
+    
+        $tpl = new TemplateView($file);
+        $tpl->{'test'} = 'asdf';
+        $result = $tpl->render();
+    
+        $this->assertEquals('1 test 2', $result);
+    }
+    
+    public function testTplWithExpressionEqFalse()
+    {
+        $file = __DIR__ . '/tpl/parsed/expression-eq-string.txt';
+    
+        $tpl = new TemplateView($file);
+        $tpl->{'test'} = 'asdf_';
+        $result = $tpl->render();
+    
+        $this->assertEquals('1  2', $result);
+    }
+    
+    public function testTplWithExpressionVarEq()
+    {
+        $file = __DIR__ . '/tpl/parsed/expression-eq-var.txt';
+    
+        $tpl = new TemplateView($file);
+        $tpl->{'test'} = 'asdf';
+        $tpl->{'test2'} = 'asdf';
+        $result = $tpl->render();
+    
+        $this->assertEquals('1 test 2', $result);
+    }
+    
+    public function testTplWithExpressionEqVarFalse()
+    {
+        $file = __DIR__ . '/tpl/parsed/expression-eq-var.txt';
+    
+        $tpl = new TemplateView($file);
+        $tpl->{'test'} = 'asdf';
+        $tpl->{'test2'} = 'asdf_';
+        $result = $tpl->render();
+    
+        $this->assertEquals('1  2', $result);
+    }
+    
+    public function testTplWithExpressionUnknowsFailure()
+    {
+        $file = __DIR__ . '/tpl/parsed/expression-non-existing.txt';
+    
+        $tpl = new TemplateView($file);
+        try{
+            $result = $tpl->render();
+            $this->fail('expected exception');
+        } catch(\Exception $e) {
+            $this->assertEquals('Operator >< in expression not supported', $e->getMessage());
+        }
+    }
+    
+    public function testTplListArray()
+    {
+        $file = __DIR__ . '/tpl/parsed/list.txt';
+    
+        $tpl = new TemplateView($file);
+        $tpl->{'test'} = array('1','2','3');
+        $result = $tpl->render();
+    
+        $this->assertEquals('1 2 3 ', $result);
+    }
+    
 }
