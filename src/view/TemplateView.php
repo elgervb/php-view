@@ -36,7 +36,7 @@ class TemplateView extends SimpleTemplateView
         $viewmodel = $this;
         
         // if blocks
-        $content = preg_replace_callback("/{#(.*)([==<> ]{2})(.*)}(.*){\/(.*)}/Usi", function ($match) use ($viewmodel)
+        $content = preg_replace_callback("/{#(.*)([=<>\!]{2})(.*)}(.*){\/(.*)}/Usi", function ($match) use ($viewmodel)
         {
             $left = preg_match("/[\'\"]/", $match[1]) ? substr($match[1], 1, $match[1] - 1) : $viewmodel->{$match[1]};
             $operator = $match[2];

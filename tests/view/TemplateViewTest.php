@@ -189,12 +189,22 @@ class TemplateViewTest extends \PHPUnit_Framework_TestCase
     public function testTplListArray()
     {
         $file = __DIR__ . '/tpl/parsed/list.txt';
-    
+        
         $tpl = new TemplateView($file);
         $tpl->{'test'} = array('1','2','3');
         $result = $tpl->render();
     
         $this->assertEquals('1 2 3 ', $result);
+    }
+    public function testGitHub1()
+    {
+        $file = __DIR__ . '/tpl/parsed/github-bug1.txt';
+    
+        $tpl = new TemplateView($file);
+        $tpl->{'encoded'} = 'asdf';
+        $result = $tpl->render();
+    
+        $this->assertEquals('asdf', $result);
     }
     
 }
