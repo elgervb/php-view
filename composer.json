@@ -22,7 +22,10 @@
 	},
 	"autoload" : {
 		"psr-0" : {
-			"view" : "src"
+			"view" : [
+				"src",
+				"tests"
+			]
 		}
 	},
 	"support" : {
