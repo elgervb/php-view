@@ -7,7 +7,12 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "php -c php.ini ./vendor/phpunit/phpunit/phpunit --configuration phpunit.xml --coverage-text",
+    "test:watch": "watch 'npm run --silent test' ./src ./tests",
+    "test:coverage": "$npm_package_scripts_test --coverage-text",
+    "start": "php -S localhost:4000 -t src/ -c php.ini src/router.php",
+    "postinstall": "composer install --no-interaction --prefer-source",
+    "version": "php -v"
   },
   "repository": {
     "type": "git",
@@ -20,13 +25,7 @@
   },
   "homepage": "https://github.com/elgervb/php-view",
   "devDependencies": {
-    "browser-sync": "^2.10.0",
-    "gulp": "^3.9.0",
-    "gulp-connect-php": "0.0.5",
-    "gulp-if": "^2.0.0",
-    "gulp-notify": "^2.2.0",
-    "gulp-phpunit": "^0.9.1",
-    "lodash": "^3.10.1",
-    "yargs": "^3.30.0"
+    "lodash": "4.17.4",
+    "watch": "1.0.2"
   }
 }
